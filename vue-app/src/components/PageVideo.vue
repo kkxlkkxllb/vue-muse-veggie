@@ -1,56 +1,38 @@
 <template>
-  <page-two data-page="true">
-    <header class="header-bar">
-      <button class="btn pull-left icon icon-arrow-back" data-navigation="$previous-page"></button>
-      <div class="center">
-        <h1 class="title" v-if="formatVideo">{{formatVideo.title}}</h1>
-      </div>
-    </header>
+  <div class="video-page">
+    <mu-appbar :title="videoTitle">
+      <mu-icon-button icon="arrow_back" slot="left" href="/#/" />
+    </mu-appbar>
     <div class="content">
       <template v-if="formatVideo">
         <canvas-layer ref="canvas" :isPlayer='true' :wrapHeight='playerHeight'></canvas-layer>
         <div class="padded-full">
-          <button class="btn primary" v-tap="onVideoTap">
-            <span v-if="playStatus === 0">播放</span>
-            <span v-else-if="playStatus === 1">暂停</span>
-            <span v-else="playStatus === 2">继续</span>
-          </button>
-          <div class="progress active">
-            <div class="determinate" :style="progressWidth"></div>
-          </div>
+          <mu-flat-button :label="videoBtn" class="demo-flat-button" primary  @click="onVideoTap" />
+          <mu-linear-progress mode="determinate" :value="Number(progress)"/>
           <span>{{currentTs}}</span>
         </div>
       </template>
       <template v-else>
-        <div class="padded-full">
-          <div class="circle-progress active" id="videosLoader">
-            <div class="spinner"></div>
-          </div>
+        <div class="content-center">
+          <mu-circular-progress :size="70" color="red" />
         </div>
       </template>
     </div>
-  </page-two>
+  </div>
 </template>
+<style lang="stylus">
+  .content-center
+    padding 30px
+    text-align center
 
+</style>
 <script>
-import Vue from 'vue'
 import CanvasLayer from './CanvasLayer.vue'
 import Util from '../libs/util.js'
-// Directive to use tap events with VueJS
-Vue.directive('tap', {
-  isFn: true, // important!
-  bind: function (el, bindings) {
-    el.on('tap', bindings.value)
-  }
-})
 
 export default {
-  name: 'PhononPageTwo',
+  name: 'PageVideo',
   props: {
-    app: {
-      type: Object,
-      require: true
-    },
     sync: {
       type: Object,
       require: true
@@ -67,14 +49,7 @@ export default {
   },
 
   mounted () {
-    /*
-     * Phonon also supports objects
-     * With VueJS, it is better to use "this"
-     * instead of a callable function like other examples
-     * If Phonon finds page events, it will call them
-     * here we want to use onClose, onHidden and onHashChanged methods
-     */
-    this.app.on({page: 'page-two', preventClose: false}, this)
+    this.$bindAsObject('video', this.sync.ref('vd').child(this.$route.params.id))
   },
   computed: {
     formatVideo () {
@@ -91,8 +66,18 @@ export default {
         return null
       }
     },
-    progressWidth () {
-      return 'width:' + this.progress + '%;'
+    videoBtn () {
+      switch (this.playStatus) {
+        case 0:
+          return '播放'
+        case 1:
+          return '暂停'
+        case 2:
+          return '继续'
+      }
+    },
+    videoTitle () {
+      return this.formatVideo ? this.formatVideo.title : ''
     },
     playerHeight () {
       return (document.documentElement.clientWidth * 9) / 16
@@ -102,19 +87,16 @@ export default {
     }
   },
   watch: {
-    // video: function (v1, v2) {
-    //   console.log(v1, v2)
-    // }
+    $route (to, from) {
+      console.log(to)
+      this.$bindAsObject('video', this.sync.ref('vd').child(this.$route.params.id))
+    }
   },
 
   methods: {
 
     onHidden () {
       this.$refs.canvas.resetLayer()
-    },
-
-    onHashChanged (vid) {
-      this.$bindAsObject('video', this.sync.ref('vd').child(vid[0]))
     },
 
     findObjById (list, id) {

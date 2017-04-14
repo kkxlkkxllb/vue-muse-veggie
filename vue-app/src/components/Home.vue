@@ -1,15 +1,16 @@
 <template>
   <div class="page-home">
     <mu-appbar title="手绘微课">
-      <mu-flat-button v-if="user" href="/#/logout" label="Log out" slot="right" />
+      <mu-flat-button v-if="user" label="Account" slot="right" @click="open" />
       <mu-flat-button v-if="!user" href="/#/login" label="Log in" slot="right" />
       <mu-flat-button href="/#/admin" label="Admin" slot="right" />
+      <mu-flat-button href="/#/svg" label="Svg" slot="right" />
     </mu-appbar>
     <div class="content">
       <template v-if="videos.length">
         <mu-sub-header>热门推荐</mu-sub-header>
         <mu-list>
-          <mu-list-item :href="'/video/' + video.id" v-for="video in reverseVideos" :title="video.title">
+          <mu-list-item :href="'/#/video/' + video.id" v-for="video in reverseVideos" :title="video.title">
             <span class="pull-right">{{video.duration}}</span>
           </mu-list-item>
         </mu-list>
@@ -20,6 +21,17 @@
         </div>
       </template>
     </div>
+    <mu-dialog :open="dialog" title="当前账号" @close="close" v-if="user">
+      <mu-list>
+        <mu-list-item :title="user.displayName">
+          <mu-avatar slot="left" :src="avatar" class="avatar" />
+        </mu-list-item>
+        <mu-list-item title="Email">
+          {{user.email}}
+        </mu-list-item>
+      </mu-list>
+      <mu-raised-button label="退出登录" class="demo-raised-button" primary href="/#/logout" />
+    </mu-dialog>
   </div>
 </template>
 <style lang="stylus">
@@ -47,11 +59,11 @@
     data () {
       return {
         videos: [],
-        user: null
+        user: null,
+        dialog: false
       }
     },
     created () {
-      console.log('---')
       this.auth.onAuthStateChanged((userInfo) => {
         this.user = userInfo
       })
@@ -69,10 +81,18 @@
           rObj.duration = Util.toHHMMSS(JSON.parse(v.cd).dur)
           return rObj
         })
+      },
+      avatar () {
+        return window.CDN_PF + this.user.photoURL
       }
     },
     methods: {
-
+      open () {
+        this.dialog = true
+      },
+      close () {
+        this.dialog = false
+      }
     }
   }
 </script>

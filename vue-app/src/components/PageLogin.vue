@@ -1,7 +1,7 @@
 <template>
   <div class='page-login'>
     <mu-appbar title="账户登录">
-      <mu-icon-button icon="arrow_back" slot="left" href="/" />
+      <mu-icon-button icon="arrow_back" slot="left" href="/#/" />
       <mu-flat-button href="/admin" class="md-raised md-default" slot="right" label="没有账户" />
     </mu-appbar>
     <div class="container">
