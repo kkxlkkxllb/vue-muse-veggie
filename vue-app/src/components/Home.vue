@@ -1,6 +1,7 @@
 <template>
   <div class="page-home">
     <mu-appbar title="手绘微课">
+      <mu-flat-button label="扫码听课" slot="right" @click="scanCode" />
       <mu-flat-button v-if="user" label="Account" slot="right" @click="open" />
       <mu-flat-button v-if="!user" href="/#/login" label="Log in" slot="right" />
       <mu-flat-button href="/#/admin" label="Admin" slot="right" />
@@ -32,6 +33,7 @@
       </mu-list>
       <mu-raised-button label="退出登录" class="demo-raised-button" primary href="/#/logout" />
     </mu-dialog>
+    <mu-snackbar v-if="snackbar" message="您扫描的二维码未包含相关微课信息" action="关闭" @actionClick="hideSnackbar" @close="hideSnackbar"/>
   </div>
 </template>
 <style lang="stylus">
@@ -60,7 +62,8 @@
       return {
         videos: [],
         user: null,
-        dialog: false
+        dialog: false,
+        snackbar: false
       }
     },
     created () {
@@ -92,6 +95,40 @@
       },
       close () {
         this.dialog = false
+      },
+      hideSnackbar () {
+        this.snackbar = false
+      },
+      scanCode () {
+        if (!window.cordova) {
+          return
+        }
+        const _self = this
+        window.cordova.plugins.barcodeScanner.scan(
+          function (result) {
+            let id = result.text.split('#/v/')[1]
+            if (id) {
+              _self.$router.replace('/#/video/' + id)
+            } else {
+              _self.snackbar = true
+            }
+          },
+          function (error) {
+            console.log('扫码出错: ' + error)
+          },
+          {
+            preferFrontCamera: false, // iOS and Android
+            showFlipCameraButton: false, // iOS and Android
+            showTorchButton: false, // iOS and Android
+            torchOn: false, // Android, launch with the torch switched on (if available)
+            prompt: '请对准要扫描的微课二维码', // Android
+            resultDisplayDuration: 500, // Android, display scanned text for X ms. 0 suppresses it entirely, default 1500
+            formats: 'QR_CODE', // default: all but PDF_417 and RSS_EXPANDED
+            // orientation: 'portrait', // Android only (portrait|landscape), default unset so it rotates with the device
+            disableAnimations: true, // iOS
+            disableSuccessBeep: false // iOS
+          }
+        )
       }
     }
   }

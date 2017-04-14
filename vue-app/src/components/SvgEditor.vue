@@ -1,7 +1,7 @@
 <template>
   <div class='page-svg'>
     <mu-appbar title="Svg Editor">
-      <mu-icon-button icon="arrow_back" slot="left" href="/" />
+      <mu-icon-button icon="arrow_back" slot="left" href="#/" />
     </mu-appbar>
     <div id="drawing">
 

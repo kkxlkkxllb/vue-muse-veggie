@@ -5,6 +5,7 @@ import VueRouter from 'vue-router'
 import wilddog from 'wilddog'
 import WildVue from 'wildvue'
 import MuseUI from 'muse-ui'
+import VueCordova from 'vue-cordova'
 
 require('muse-ui/dist/muse-ui.css')
 window.SVG = require('svg.js')
@@ -18,6 +19,7 @@ require('svg.draggy.js')
 window.CDN_PF = 'https://up17org.b0.upaiyun.com'
 
 Vue.use(VueRouter)
+Vue.use(VueCordova)
 Vue.use(WildVue)
 Vue.use(MuseUI)
 
@@ -46,8 +48,8 @@ let wilddogApp = wilddog.initializeApp({
 // }
 
 const router = new VueRouter({
-  mode: 'hash',
-  base: __dirname,
+  // mode: 'hash',
+  // base: __dirname,
   routes: [
     { path: '/', component: Home, props: {sync: wilddogApp.sync(), auth: wilddogApp.auth()} },
     { path: '/svg', component: SvgEditor },
@@ -65,16 +67,27 @@ const router = new VueRouter({
 })
 
 /* eslint-disable no-new */
-new Vue({
-  router,
-  template: `
-    <div id="app">
-      <transition>
-        <keep-alive>
-          <router-view class="pages"></router-view>
-        </keep-alive>
-      </transition>
-    </div>
-  `
-}).$mount('#app')
+const tmpl = `
+  <div id="app">
+    <transition>
+      <keep-alive>
+        <router-view class="pages"></router-view>
+      </keep-alive>
+    </transition>
+  </div>
+`
+if (window.cordova) {
+  Vue.cordova.on('deviceready', () => {
+    console.log('Cordova : device is ready !')
+    new Vue({
+      router,
+      template: tmpl
+    }).$mount('#app')
+  })
+} else {
+  new Vue({
+    router,
+    template: tmpl
+  }).$mount('#app')
+}
 
